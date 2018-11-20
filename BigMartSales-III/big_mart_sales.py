@@ -8,8 +8,8 @@ import pandas as pd
 from scipy.stats import mode
 from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LinearRegression
-import statsmodels.formula.api as sm
 from sklearn.cross_validation import train_test_split
+from sklearn.linear_model import Ridge
 
 DIR = 'D:\Github\Data\BigMartSales-III'
 # Importing the dataset
@@ -116,32 +116,44 @@ predictors = [x for x in train.columns if x not in [target]+IDcol]
 X = train[predictors]
 Y = train[target]
 
+def calculate_mse(Y_pred, Y_actual):
+    # calculate MSE
+    mse = np.mean((Y_pred-Y_actual)**2)
+    return mse
+    
+def plot_residual_graph(Y_pred, Y_actual):
+    # Plot the graph and check the data pattern.
+    # residual plot
+    x_plot = plt.scatter(Y_pred, (Y_pred - Y_actual), c='b')
+    plt.hlines(y=0, xmin= -1000, xmax=5000)
+    plt.title('Residual plot')
+
 #split the data into train and test data. Cross validation.
 X_train, X_test, Y_train , Y_test = train_test_split(X,Y,test_size = 0.2, random_state = 0)
 
+'''
+# Uncomment this code to use LinearRegression.
 # Predict Values using LinearRegression Model
-# Leaderboard score for linear regresison - 1203
 linear_regression = LinearRegression()
 linear_regression.fit(X_train,Y_train)
 Y_predict = linear_regression.predict(X_test)
 
-# calculate MSE
-mse = np.mean((Y_predict-Y_test)**2)
-print(mse)
+print(calculate_mse(Y_predict, Y_test))
 
 # calculate R-Squared Adjusted.
 score = linear_regression.score(X_test,Y_test)
 print(score)
 
-# Plot the graph and check the data pattern.
-# residual plot
-x_plot = plt.scatter(Y_predict, (Y_predict - Y_test), c='b')
-plt.hlines(y=0, xmin= -1000, xmax=5000)
-plt.title('Residual plot')
+# plot the graph.
+plot_residual_graph(Y_predict, Y_test)
 
 test[target] = linear_regression.predict(test[predictors])
 
 # Linear model processing end here...
+'''
+
+'''
+# Uncomment this code for using Polynomial Regression.
 
 # Predict the values using Polynomial regression.
 # Fitting Polynomial Regression to the dataset
@@ -156,21 +168,40 @@ X_test_poly = poly_reg.fit_transform(X_test)
 Y_predict_poly = polynomial_regression.predict(X_test_poly)
 
 # calculate MSE
-mse = np.mean((Y_predict_poly-Y_test)**2)
-print(mse)
+print(calculate_mse(Y_predict_poly, Y_test))
 
 # calculate R-Squared Adjusted.
 score = polynomial_regression.score(X_test_poly,Y_test)
 print(score)
 
-# Plot the graph and check the data pattern.
-# residual plot
-x_plot = plt.scatter(Y_predict_poly, (Y_predict_poly - Y_test), c='b')
-plt.hlines(y=0, xmin= -1000, xmax=5000)
-plt.title('Residual plot')
+plot_residual_graph(Y_predict_poly, Y_test)
 
 # predict for test data.
 test[target] = polynomial_regression.predict(poly_reg.fit_transform(test[predictors]))
+
+# checking magnitude of coefficient.
+coeff = polynomial_regression.coef_
+print(max(coeff))
+print(min(coeff))
+print(sum(coeff)/len(coeff))
+
+# Polynomical regression processing ends here.
+'''
+
+# Training the model using Ridge Regression.
+ridge_regression = Ridge(alpha = 0.01, normalize = True)
+ridge_regression.fit(X_train, Y_train)
+Y_pred_ridge = ridge_regression.predict(X_test)
+print(calculate_mse(Y_pred_ridge, Y_test))
+ridge_regression.score(X_test, Y_test)
+
+ridge_coeff = ridge_regression.coef_
+print(max(ridge_coeff))
+print(min(ridge_coeff))
+print(sum(ridge_coeff)/len(ridge_coeff))
+
+test[target] = ridge_regression.predict(test[predictors])
+# Ridge regression ends here..
 
 submission = test[IDcol]
 submission[target] = test[target]
