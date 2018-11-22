@@ -10,6 +10,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.cross_validation import train_test_split
 from sklearn.linear_model import Ridge
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import GridSearchCV
 
 DIR = 'D:\Github\Data\BigMartSales-III'
 # Importing the dataset
@@ -185,11 +187,21 @@ print(max(coeff))
 print(min(coeff))
 print(sum(coeff)/len(coeff))
 
+# Evaluating model performance using k-fold cross validation.
+poly_regression_accuracies = cross_val_score(estimator = polynomial_regression, X = X_train_poly, 
+                             y = Y_train, cv = 10)
+
+print(poly_regression_accuracies.mean())
+print(poly_regression_accuracies.std())
+
 # Polynomical regression processing ends here.
 '''
 
+
+# Uncomment this code to use RidgeRegression.
+
 # Training the model using Ridge Regression.
-ridge_regression = Ridge(alpha = 0.01, normalize = True)
+ridge_regression = Ridge(normalize = True)
 ridge_regression.fit(X_train, Y_train)
 Y_pred_ridge = ridge_regression.predict(X_test)
 print(calculate_mse(Y_pred_ridge, Y_test))
@@ -200,9 +212,29 @@ print(max(ridge_coeff))
 print(min(ridge_coeff))
 print(sum(ridge_coeff)/len(ridge_coeff))
 
-test[target] = ridge_regression.predict(test[predictors])
+# Evaluting model performance using k-folde cross validation.
+ridge_accuracies = cross_val_score(estimator = ridge_regression, X = X_train, 
+                             y = Y_train, cv = 10)
+print(ridge_accuracies.mean())
+print(ridge_accuracies.std())
+# Applying Grid Search to find the best model and the best parameters
+alphas = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+fit_interceptOptions = ([True, False])
+solverOptions = (['svd', 'cholesky', 'sparse_cg', 'sag'])
+
+parameters = dict(alpha=alphas, fit_intercept=fit_interceptOptions, solver=solverOptions)
+
+grid_search = GridSearchCV(estimator = ridge_regression,
+                           param_grid = parameters)
+
+grid_search = grid_search.fit(X_train, Y_train)
+best_accuracy = grid_search.best_score_
+best_parameters = grid_search.best_params_
+
+test[target] = grid_search.predict(test[predictors])
 # Ridge regression ends here..
+
 
 submission = test[IDcol]
 submission[target] = test[target]
-submission.to_csv(DIR+"/data/polynomial_regression.csv", index=False)
+submission.to_csv(DIR+"/ridge_regression.csv", index=False)
