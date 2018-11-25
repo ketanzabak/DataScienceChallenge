@@ -12,6 +12,7 @@ from sklearn.cross_validation import train_test_split
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV
+from xgboost import XGBRegressor
 
 DIR = 'D:\Github\Data\BigMartSales-III'
 # Importing the dataset
@@ -197,7 +198,7 @@ print(poly_regression_accuracies.std())
 # Polynomical regression processing ends here.
 '''
 
-
+'''
 # Uncomment this code to use RidgeRegression.
 
 # Training the model using Ridge Regression.
@@ -233,7 +234,28 @@ best_parameters = grid_search.best_params_
 
 test[target] = grid_search.predict(test[predictors])
 # Ridge regression ends here..
+'''
 
+# Method to evaludate model performance
+def evaluate_model_performance(model, x_train, y_train, x_test, y_test):
+    model.fit(x_train, y_train)
+    y_predict = model.predict(x_test)
+    print("Mean Square Error: ",calculate_mse(y_predict, y_test))
+    accurracy = cross_val_score(estimator = model, X = x_train, y = y_train, cv = 10)
+    print("Accurracy Mean: ", accurracy.mean())
+    print("Accurracy Std : ", accurracy.std())
+
+# Training model using XGBoost.
+xgbRegressor = XGBRegressor()
+evaluate_model_performance(xgbRegressor, X_train, Y_train, X_test, Y_test)
+'''
+Performance of above model :
+    Mean Square Error:  1186173.7950376957
+    Accurracy Mean:  0.594592170829
+    Accurracy Std :  0.019906704365
+'''
+
+test[target] = xgbRegressor.predict(test[predictors])
 
 submission = test[IDcol]
 submission[target] = test[target]
