@@ -8,3 +8,6 @@ Repository for solution of data science challenges.<br>
 
 ### 2. Titanic: Machine Learning from Disaster
 - [Problem Statement](https://www.kaggle.com/c/titanic/)
+
+### 3. Practice Problem: Loan Prediction III
+- [Problem Statement](https://datahack.analyticsvidhya.com/contest/practice-problem-loan-prediction-iii/)
